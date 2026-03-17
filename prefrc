@@ -8,7 +8,6 @@ prefs=(
   "dock-enable-anim 1"
   "dock-show-indicator 1"
 )
+pref "${prefs[@]}"
 
-for p in "${prefs[@]}"; do
-  ./pref $p
-done
+pref --reload

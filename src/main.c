@@ -10,8 +10,8 @@ static void print_help(void)
   printf("Usage: pref <command> [args]\n");
   printf("\nCommands:\n");
   printf("  pref help                    Show this help message\n");
+  printf("  pref -r                     Restart system services to propagate preferences\n");
   printf("  pref list                    List all available preferences\n");
-  printf("  pref list -w                 List current global (user) preferences\n");
   printf("  pref <name>                  Get current value\n");
   printf("  pref <name> <value>         Set value\n");
   printf("\nExamples:\n");
@@ -20,20 +20,13 @@ static void print_help(void)
   printf("  pref trackpad-speed 5        # set trackpad speed\n");
 }
 
-static void list_written(void)
+static void restart_services(void)
 {
-  printf("Current global preferences (defaults read -g):\n\n");
-  FILE *fp = popen("defaults read -g 2>/dev/null | head -50", "r");
-  if (!fp) {
-    fprintf(stderr, "Failed to read global preferences\n");
-    return;
-  }
-  
-  char buf[256];
-  while (fgets(buf, sizeof(buf), fp)) {
-    printf("%s", buf);
-  }
-  pclose(fp);
+  printf("Restarting system services...\n");
+  system("killall Finder 2>/dev/null");
+  system("killall Dock 2>/dev/null");
+  system("killall SystemUIServer 2>/dev/null");
+  printf("Done.\n");
 }
 
 int main(int argc, char *argv[])
@@ -48,11 +41,12 @@ int main(int argc, char *argv[])
     return 0;
   }
 
+  if (strcmp(argv[1], "-r") == 0) {
+    restart_services();
+    return 0;
+  }
+
   if (strcmp(argv[1], "list") == 0) {
-    if (argc > 2 && (strcmp(argv[2], "-w") == 0 || strcmp(argv[2], "--written") == 0)) {
-      list_written();
-      return 0;
-    }
     const PrefMapping *p = prefs_all();
     int count = prefs_count();
     printf("Available preferences:\n\n");
@@ -64,7 +58,7 @@ int main(int argc, char *argv[])
 
   PrefMapping *pref = prefs_find(argv[1]);
   if (!pref) {
-    fprintf(stderr, "Unknown preference: %s\n", argv[1]);
+    fprintf(stderr, "Unknown preference: %s\n", pref->cmd);
     fprintf(stderr, "Use 'pref help' to see available commands\n");
     return 1;
   }
