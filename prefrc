@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+prefs=(
+  "dock-autohide 1"
+  "dock-magnification 0"
+  "docksize 8"
+  "dock-position right"
+  "dock-enable-anim 1"
+  "dock-show-indicator 1"
+)
+
+for p in "${prefs[@]}"; do
+  ./pref $p
+done
